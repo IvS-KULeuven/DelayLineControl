@@ -1,0 +1,22 @@
+import asyncio
+from asyncua import ua
+from asyncua.sync import Client
+import time
+
+
+
+class OPCUAConnection:
+    def __init__(self):
+        self.client = Client("opc.tcp://10.33.178.141:4840/freeopcua/server/")
+
+    def connect(self):
+        self.client.connect()
+
+    def read_node(self, node_id):
+        node = self.client.get_node(node_id)
+        return node.get_value()
+
+    def write_node(self, node_id, value):
+        node = self.client.get_node(node_id)
+        node.set_value(value)
+
