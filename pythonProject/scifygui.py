@@ -34,9 +34,6 @@ class MainWindow(QMainWindow):
         # save the OPC UA connection
         self.opcua_conn = opcua_conn
 
-        # now = datetime.utcnow()
-        # self.fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\Temperatures_' + now.strftime(r'%Y-%m-%d_%H-%M') + '.csv'
-
         # set up the main window
         self.ui = loadUi('main_window.ui', self)
 
