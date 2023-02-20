@@ -110,7 +110,8 @@ class DelayLinesWindow(QWidget):
     def __init__(self, opcua_conn):
         super(DelayLinesWindow, self).__init__()
         # save the OPC UA connection
-        self.opcua_conn = opcua_conn
+        self.opcua_conn = OPCUAConnection()
+        self.opcua_conn.connect()
 
         # set up the delay lines window
         self.ui = loadUi('delay_lines.ui', self)
@@ -131,6 +132,13 @@ class DelayLinesWindow(QWidget):
 
         # update the initial value in the window
         self.update_value()
+
+        self.t = QTimer()
+        self.t.timeout.connect(self.refresh_status)
+        self.t.start(10000)
+    
+    def refresh_status(self):
+        self.dl1_status()
 
     def dl1_status(self):
 
