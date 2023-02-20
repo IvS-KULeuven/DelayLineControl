@@ -146,7 +146,7 @@ class DelayLinesWindow(QWidget):
         self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
         self.ui.dl_dl1_substate.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sSubstate")))
 
-        self.ui.dl_dl1_current_position.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")))
+        self.ui.dl_dl1_current_position.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual")))
 
         self.ui.dl_dl1_current_speed.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual")))
 
