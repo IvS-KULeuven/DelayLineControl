@@ -118,7 +118,7 @@ class DelayLinesWindow(QWidget):
         # Dl statuses
         self.dl1_status()
 
-        self.ui.dl1_pb_homming.clicked.connect(lambda: self.homming())
+        self.ui.dl1_pb_homming.clicked.connect(lambda: self.homing())
         self.ui.dl_dl1_pb_scan.clicked.connect(lambda: self.scan_fringes())
 
         self.ui.dl1_pb_reset.clicked.connect(lambda: self.reset_motor())
@@ -151,7 +151,7 @@ class DelayLinesWindow(QWidget):
         current_pos = current_pos * 1000
         self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
 
-        target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosTarget")
+        target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")
         target_pos = target_pos * 1000
         self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
 
@@ -173,26 +173,24 @@ class DelayLinesWindow(QWidget):
     # Reset motor
     def reset_motor(self):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_Reset")
-                arguments = []
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_Reset")
+            arguments = []
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Homming
-    def homming(self):
+    def homing(self):
         try:
             self.reset_motor()
             time.sleep(5.0)
             self.init_motor()
             time.sleep(10)
             if not self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.bInitialised"):
-                self.ui.dl_dl1_homming.setText("Homming")
+                self.ui.dl_dl1_homming.setText("Homing")
             else:
                 self.ui.dl_dl1_homming.setText("Home")
-
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
@@ -202,62 +200,57 @@ class DelayLinesWindow(QWidget):
             pos = 10.0
             speed = 0.01
 
-            self.homming()
+            self.homing()
 
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_MoveAbs")
-                arguments = [pos, speed]
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_MoveAbs")
+            arguments = [pos, speed]
+            res = parent.call_method(method, *arguments)
 
-                if self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") >= 10:
-                    self.ui.dl_dl1_scanning.setText("Scanning Complete")
-                elif self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") <10:
-                    self.ui.dl_dl1_scanning.setText("Scanning")
+            if self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") >= 10:
+                self.ui.dl_dl1_scanning.setText("Scanning Complete")
+            elif self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") <10:
+                self.ui.dl_dl1_scanning.setText("Scanning")
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Initialize motor
     def init_motor(self):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_Init")
-                arguments = []
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_Init")
+            arguments = []
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Enable motor
     def enable_motor(self):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_Enable")
-                arguments = []
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_Enable")
+            arguments = []
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Disable motor
     def disable_motor(self):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_Disable")
-                arguments = []
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_Disable")
+            arguments = []
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Stop motor
     def stop_motor(self):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_Stop")
-                arguments = []
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_Stop")
+            arguments = []
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
@@ -269,11 +262,12 @@ class DelayLinesWindow(QWidget):
             #Convert to mm
             pos = float(pos) / 1000
             speed = 0.05
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_MoveAbs")
-                arguments = [pos,speed]
-                res = parent.call_method(method, *arguments)
+
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_MoveAbs")
+            arguments = [pos,speed]
+            res = parent.call_method(method, *arguments)
+            print(res)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
@@ -285,22 +279,21 @@ class DelayLinesWindow(QWidget):
             rel_pos = float(rel_pos) / 1000
             print("rel_pos = ",rel_pos)
             speed = 0.05
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_MoveRel")
-                arguments = [rel_pos, speed]
-                res = parent.call_method(method, *arguments)
+
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_MoveRel")
+            arguments = [rel_pos, speed]
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
     # Move velocity
     def move_velocity_motor(self, vel):
         try:
-            with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
-                parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
-                method = parent.get_child("4:RPC_MoveVel")
-                arguments = [vel]
-                res = parent.call_method(method, *arguments)
+            parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
+            method = parent.get_child("4:RPC_MoveVel")
+            arguments = [vel]
+            res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
 
