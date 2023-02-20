@@ -151,10 +151,13 @@ class DelayLinesWindow(QWidget):
         current_pos = current_pos * 1000
         self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
 
+        target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosTarget")
+        target_pos = target_pos * 1000
+        self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
+
         current_speed = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual")
         current_speed = current_speed * 1000
         self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
-
 
     def update_value(self):
         # update the value in the delay lines window
