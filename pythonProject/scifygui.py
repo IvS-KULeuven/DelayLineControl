@@ -113,7 +113,6 @@ class DelayLinesWindow(QWidget):
 
         # set up the delay lines window
         self.ui = loadUi('delay_lines.ui', self)
-        self.ui.dl1_pb_reset.clicked.connect(self.write_to_server)
         # Dl statuses
         self.dl1_status()
 
