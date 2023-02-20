@@ -53,6 +53,7 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, *args):
         self.t.stop()
+        self.opcua_conn.disconnect()
         super().closeEvent(*args)
 
     def refresh_status(self):
@@ -136,7 +137,12 @@ class DelayLinesWindow(QWidget):
         self.t = QTimer()
         self.t.timeout.connect(self.refresh_status)
         self.t.start(500)
-    
+
+    def closeEvent(self, *args):
+        self.t.stop()
+        self.opcua_conn.disconnect()
+        super().closeEvent(*args)
+
     def refresh_status(self):
         self.dl1_status()
 

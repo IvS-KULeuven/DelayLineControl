@@ -12,6 +12,9 @@ class OPCUAConnection:
     def connect(self):
         self.client.connect()
 
+    def disconnect(self):
+        self.client.disconnect()
+
     def read_node(self, node_id):
         node = self.client.get_node(node_id)
         return node.get_value()
