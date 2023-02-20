@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         self.ui.main_pb_delay_lines.clicked.connect(self.open_delay_lines)
 
         # Dl status on main window
-        self.main_dl1_status()
+        self.load_dl1_status()
 
         # update the temp values
         self.update_cryo_temps()
@@ -57,6 +57,7 @@ class MainWindow(QMainWindow):
 
     def refresh_status(self):
         try:
+            self.load_dl1_status()
             self.update_cryo_temps()
 
             now = datetime.utcnow()
@@ -86,7 +87,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"Error opening delay lines window: {e}")
 
-    def main_dl1_status(self):
+    def load_dl1_status(self):
 
         self.ui.label_dl_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
         self.ui.label_dl_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
