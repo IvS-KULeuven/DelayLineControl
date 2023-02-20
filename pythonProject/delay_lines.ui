@@ -178,6 +178,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -205,6 +206,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -232,6 +234,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -256,6 +259,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -279,6 +283,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <bold>false</bold>
     </font>
    </property>
@@ -302,6 +307,7 @@ font: 700 14pt &quot;Segoe UI&quot;;color: rgb(71, 185, 200);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -329,6 +335,7 @@ background-color: rgb(211, 230, 216);</string>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <bold>false</bold>
     </font>
    </property>
@@ -351,6 +358,7 @@ background-color: rgb(211, 230, 216);</string>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <bold>false</bold>
     </font>
    </property>
@@ -373,6 +381,7 @@ background-color: rgb(211, 230, 216);</string>
    <property name="font">
     <font>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <bold>false</bold>
     </font>
    </property>
@@ -396,6 +405,7 @@ background-color: rgb(211, 230, 216);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -421,6 +431,7 @@ background-color: rgb(170, 85, 255);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -430,7 +441,7 @@ background-color: rgb(170, 85, 255);</string>
 color:rgb(170, 85, 255)</string>
    </property>
    <property name="text">
-    <string>Homming</string>
+    <string>Homing</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -449,6 +460,7 @@ color:rgb(170, 85, 255)</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -491,7 +503,7 @@ background-color: rgb(202, 202, 151);</string>
     </font>
    </property>
    <property name="text">
-    <string>Realative Position</string>
+    <string>Relative Position (μm)</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -548,7 +560,7 @@ background-color: rgb(202, 202, 151);</string>
     </font>
    </property>
    <property name="text">
-    <string>Position</string>
+    <string>Position (μm)</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -607,6 +619,7 @@ background-color: rgb(202, 202, 151);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -683,7 +696,7 @@ background-color: rgb(202, 202, 151);</string>
     <rect>
      <x>410</x>
      <y>350</y>
-     <width>161</width>
+     <width>181</width>
      <height>35</height>
     </rect>
    </property>
@@ -691,7 +704,7 @@ background-color: rgb(202, 202, 151);</string>
     <string notr="true">font: 700 12pt &quot;Segoe UI&quot;;</string>
    </property>
    <property name="text">
-    <string>Current Position</string>
+    <string>Current Position (μm)</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -700,9 +713,9 @@ background-color: rgb(202, 202, 151);</string>
   <widget class="QLabel" name="label_10">
    <property name="geometry">
     <rect>
-     <x>670</x>
+     <x>660</x>
      <y>350</y>
-     <width>131</width>
+     <width>151</width>
      <height>35</height>
     </rect>
    </property>
@@ -710,7 +723,7 @@ background-color: rgb(202, 202, 151);</string>
     <string notr="true">font: 700 12pt &quot;Segoe UI&quot;;</string>
    </property>
    <property name="text">
-    <string>Current Speed</string>
+    <string>Current Speed (μm)</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
@@ -729,6 +742,7 @@ background-color: rgb(202, 202, 151);</string>
     <font>
      <family>Segoe UI</family>
      <pointsize>12</pointsize>
+     <weight>50</weight>
      <italic>false</italic>
      <bold>false</bold>
     </font>
@@ -738,7 +752,7 @@ background-color: rgb(202, 202, 151);</string>
 color:rgb(255, 170, 127)</string>
    </property>
    <property name="text">
-    <string>Homming</string>
+    <string>Homing</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
