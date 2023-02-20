@@ -147,10 +147,13 @@ class DelayLinesWindow(QWidget):
         self.ui.dl_dl1_substate.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sSubstate")))
 
         current_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual")
-        self.ui.dl_dl1_current_position.setText(f'{current_pos:.4f}')
+        # Convert mm -> micron
+        current_pos = current_pos * 1000
+        self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
 
         current_speed = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual")
-        self.ui.dl_dl1_current_speed.setText(f'{current_speed:.4f}')
+        current_speed = current_speed * 1000
+        self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
 
     def update_value(self):
@@ -260,7 +263,8 @@ class DelayLinesWindow(QWidget):
     def move_abs_motor(self):
         try:
             pos = self.ui.dl1_textEdit_pos.toPlainText()
-            pos = float(pos)
+            #Convert to mm
+            pos = float(pos) / 1000
             speed = 0.05
             with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
                 parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
@@ -274,7 +278,8 @@ class DelayLinesWindow(QWidget):
     def move_rel_motor(self):
         try:
             rel_pos = self.ui.dl1_textEdit_rel_pos.toPlainText()
-            rel_pos = float(rel_pos)
+            # Convert to mm
+            rel_pos = float(rel_pos) / 1000
             print("rel_pos = ",rel_pos)
             speed = 0.05
             with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
