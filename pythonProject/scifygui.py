@@ -258,6 +258,7 @@ class DelayLinesWindow(QWidget):
     def move_abs_motor(self):
         try:
             pos = self.ui.dl1_textEdit_pos.toPlainText()
+            pos = float(pos)
             speed = 0.05
             with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
                 parent = client.get_node('ns=4;s=MAIN.DL_Servo_1')
@@ -271,6 +272,7 @@ class DelayLinesWindow(QWidget):
     def move_rel_motor(self):
         try:
             rel_pos = self.ui.dl1_textEdit_rel_pos.toPlainText()
+            rel_pos = float(rel_pos)
             print("rel_pos = ",rel_pos)
             speed = 0.05
             with Client("opc.tcp://10.33.178.141:4840/freeopcua/server/") as client:
