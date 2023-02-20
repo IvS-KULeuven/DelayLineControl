@@ -135,7 +135,7 @@ class DelayLinesWindow(QWidget):
 
         self.t = QTimer()
         self.t.timeout.connect(self.refresh_status)
-        self.t.start(10000)
+        self.t.start(500)
     
     def refresh_status(self):
         self.dl1_status()
