@@ -206,7 +206,16 @@ class DelayLinesWindow(QWidget):
             pos = 10.0
             speed = 0.01
 
-            self.homing()
+            # Homing motor first
+            self.reset_motor()
+            time.sleep(5.0)
+            self.init_motor()
+            time.sleep(10)
+
+            # Triggering camera to START taking images
+
+            self.trigger_camera_to_take_images(True)
+
 
             parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
             method = parent.get_child("4:RPC_MoveAbs")
@@ -215,6 +224,9 @@ class DelayLinesWindow(QWidget):
 
             if self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") >= 10:
                 self.ui.dl_dl1_scanning.setText("Scanning Complete")
+                # Triggering camera to STOP taking images
+                self.trigger_camera_to_take_images(False)
+
             elif self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") <10:
                 self.ui.dl_dl1_scanning.setText("Scanning")
         except Exception as e:
@@ -302,6 +314,14 @@ class DelayLinesWindow(QWidget):
             res = parent.call_method(method, *arguments)
         except Exception as e:
             print(f"Error calling RPC method: {e}")
+
+    def trigger_camera_to_take_images(self, bTrig):
+
+        # Triggering camera to start taking images
+        # CameraOut1_node = self.opcua_conn.read_node("ns = 4;s = GVL_DL_Scanning_Homming.bTrigCameraImages")
+        CameraOut1_node_dv = ua.DataValue(ua.Variant(bTrig, ua.VariantType.Boolean))
+        # CameraOut1_node.set_value(CameraOut1_node_dv)
+        self.opcua_conn.write_node("ns = 4;s = GVL_DL_Scanning_Homming.bTrigCameraImages", CameraOut1_node_dv)
 
 
 # if __name__=='__main__':
