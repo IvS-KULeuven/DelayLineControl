@@ -165,6 +165,14 @@ class DelayLinesWindow(QWidget):
         current_speed = current_speed * 1000
         self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
+        now = datetime.utcnow()
+        fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
+                        + now.strftime(r'%Y-%m-%d') + '.csv'
+
+        f = open(fileName, 'a')
+        f.write(f'{str(now)}, {current_pos:.1f} \n')
+
+
     def update_value(self):
         # update the value in the delay lines window
         value = self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_1")
