@@ -211,31 +211,32 @@ class DelayLinesWindow(QWidget):
     # Scan Fringes
     def scan_fringes(self):
         try:
-            pos = 10.0
-            speed = 0.01
+            pos = 10.0  #the required position
+            speed = 0.1 # mm/s
 
             # Homing motor first
-            self.reset_motor()
-            time.sleep(5.0)
-            self.init_motor()
-            time.sleep(10)
+            #self.reset_motor()
+            #time.sleep(5.0)
+            #self.init_motor()
+            #time.sleep(10)
 
             # Triggering camera to START taking images
 
-            self.trigger_camera_to_take_images(True)
+            #self.trigger_camera_to_take_images(True)
 
 
             parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
-            method = parent.get_child("4:RPC_MoveAbs")
-            arguments = [pos, speed]
+            method = parent.get_child("4:RPC_MoveVel")
+            arguments = [speed]
             res = parent.call_method(method, *arguments)
 
-            if self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") >= 10:
+            if self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") >= pos:
                 self.ui.dl_dl1_scanning.setText("Scanning Complete")
                 # Triggering camera to STOP taking images
-                self.trigger_camera_to_take_images(False)
+                #self.trigger_camera_to_take_images(False)
+                self.stop_motor()
 
-            elif self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") <10:
+            elif self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual") <pos:
                 self.ui.dl_dl1_scanning.setText("Scanning")
         except Exception as e:
             print(f"Error calling RPC method: {e}")
@@ -287,7 +288,7 @@ class DelayLinesWindow(QWidget):
             pos = self.ui.dl1_textEdit_pos.toPlainText()
             #Convert to mm
             pos = float(pos) / 1000
-            speed = 0.05
+            speed = 0.1
 
             parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
             method = parent.get_child("4:RPC_MoveAbs")
