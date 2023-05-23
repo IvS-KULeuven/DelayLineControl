@@ -136,7 +136,7 @@ class DelayLinesWindow(QWidget):
 
         self.t = QTimer()
         self.t.timeout.connect(self.refresh_status)
-        self.t.start(500)
+        self.t.start(500)  # ms
 
     def closeEvent(self, *args):
         self.t.stop()
@@ -147,6 +147,8 @@ class DelayLinesWindow(QWidget):
         self.dl1_status()
 
     def dl1_status(self):
+
+        timerElapsed = datetime.utcnow()
 
         self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
         self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
@@ -166,11 +168,13 @@ class DelayLinesWindow(QWidget):
         self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
         now = datetime.utcnow()
+
+        print('Time elapsed loading, DL position, DL speed : ', str(now - timerElapsed), current_pos, current_speed)
         fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
                         + now.strftime(r'%Y-%m-%d') + '.csv'
 
         f = open(fileName, 'a')
-        f.write(f'{str(now)}, {current_pos:.1f} \n')
+        f.write(f'{str(now)}, {current_pos:.1f}, {current_speed:.1f} \n')
 
 
     def update_value(self):
