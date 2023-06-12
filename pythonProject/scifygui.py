@@ -94,17 +94,24 @@ class MainWindow(QMainWindow):
         self.ui.label_dl_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
 
     def update_cryo_temps(self):
+        nodes = ["ns=4;s=GVL_Cryo_Temperatures.Temp_1", 
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_2",
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_3",
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_4" ]
+
+        values = self.opcua_conn.read_nodes(nodes)
+
         # update the value in the delay lines window
-        self.temp1 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_1"))
+        self.temp1 = str(values[0])
         self.ui.main_label_temp1.setText(self.temp1)
 
-        self.temp2 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_2"))
+        self.temp2 = str(values[1])
         self.ui.main_label_temp2.setText(self.temp2)
 
-        self.temp3 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_3"))
+        self.temp3 = str(values[2])
         self.ui.main_label_temp3.setText(self.temp3)
 
-        self.temp4 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_4"))
+        self.temp4 = str(values[3])
         self.ui.main_label_temp4.setText(self.temp4)
 
 class DelayLinesWindow(QWidget):
@@ -150,9 +157,11 @@ class DelayLinesWindow(QWidget):
 
         self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
         self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
-        self.ui.dl_dl1_substate.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sSubstate")))
 
-        current_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual")
+        current_pos, current_speed, timestamp = self.opcua_conn.read_nodes(["ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual", "ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual", "ns=4;s=MAIN.sTime"])
+
+        self.ui.dl_dl1_substate.setText(str(timestamp))
+
         # Convert mm -> micron
         current_pos = current_pos * 1000
         self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
@@ -161,16 +170,16 @@ class DelayLinesWindow(QWidget):
         target_pos = target_pos * 1000
         self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
 
-        current_speed = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual")
         current_speed = current_speed * 1000
         self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
-        now = datetime.utcnow()
+        timestamp_d = datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S.%f')
+
         fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
-                        + now.strftime(r'%Y-%m-%d') + '.csv'
+                        + timestamp_d.strftime(r'%Y-%m-%d') + '.csv'
 
         f = open(fileName, 'a')
-        f.write(f'{str(now)}, {current_pos:.1f} \n')
+        f.write(f'{str(timestamp)}, {current_pos:.1f} \n')
 
 
     def update_value(self):

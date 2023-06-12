@@ -18,6 +18,10 @@ class OPCUAConnection:
     def read_node(self, node_id):
         node = self.client.get_node(node_id)
         return node.get_value()
+    
+    def read_nodes(self, node_ids):
+        nodes = [self.client.get_node(node_id) for node_id in node_ids]
+        return self.client.read_values(nodes)
 
     def write_node(self, node_id, value):
         node = self.client.get_node(node_id)
