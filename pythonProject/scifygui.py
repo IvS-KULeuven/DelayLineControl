@@ -7,6 +7,7 @@ import asyncio
 from asyncua import ua
 import time
 from datetime import datetime
+from redisclient import RedisClient
 
 # async def call_method_async(opcua_client, node_id, method_name, args):
 #     method_node = opcua_client.get_node(node_id)
@@ -33,6 +34,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         # save the OPC UA connection
         self.opcua_conn = opcua_conn
+        self.redis_client = RedisClient()
 
         # set up the main window
         self.ui = loadUi('main_window.ui', self)
@@ -62,11 +64,16 @@ class MainWindow(QMainWindow):
             self.update_cryo_temps()
 
             now = datetime.utcnow()
-            fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\Temperatures_' \
-                            + now.strftime(r'%Y-%m-%d') + '.csv'
+            # fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\Temperatures_' \
+            #                 + now.strftime(r'%Y-%m-%d') + '.csv'
 
-            f = open(fileName, 'a')
-            f.write(f'{str(now)}, {self.temp1}, {self.temp2}, {self.temp3}, {self.temp4} \n')
+            # f = open(fileName, 'a')
+            # f.write(f'{str(now)}, {self.temp1}, {self.temp2}, {self.temp3}, {self.temp4} \n')
+
+            self.redis_client.add_temperature_1(now, self.temp1)
+            self.redis_client.add_temperature_2(now, self.temp2)
+            self.redis_client.add_temperature_3(now, self.temp3)
+            self.redis_client.add_temperature_4(now, self.temp4)
         except Exception as e:
             print(e)
 
@@ -76,7 +83,7 @@ class MainWindow(QMainWindow):
 
         try:
 
-            self.delay_lines_window = DelayLinesWindow(self.opcua_conn)
+            self.delay_lines_window = DelayLinesWindow(self.opcua_conn, self.redis_client)
             self.delay_lines_window.show()
             print("Dl window is opening fine")
 
@@ -115,11 +122,13 @@ class MainWindow(QMainWindow):
         self.ui.main_label_temp4.setText(self.temp4)
 
 class DelayLinesWindow(QWidget):
-    def __init__(self, opcua_conn):
+    def __init__(self, opcua_conn, redis_client):
         super(DelayLinesWindow, self).__init__()
         # save the OPC UA connection
         self.opcua_conn = OPCUAConnection()
         self.opcua_conn.connect()
+
+        self.redis_client = redis_client
 
         # set up the delay lines window
         self.ui = loadUi('delay_lines.ui', self)
@@ -173,14 +182,16 @@ class DelayLinesWindow(QWidget):
         current_speed = current_speed * 1000
         self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
+        print(timestamp)
         timestamp_d = datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S.%f')
 
-        fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
-                        + timestamp_d.strftime(r'%Y-%m-%d') + '.csv'
+        # fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
+        #                 + timestamp_d.strftime(r'%Y-%m-%d') + '.csv'
 
-        f = open(fileName, 'a')
-        f.write(f'{str(timestamp)}, {current_pos:.1f} \n')
+        # f = open(fileName, 'a')
+        # f.write(f'{str(timestamp)}, {current_pos:.1f} \n')
 
+        self.redis_client.add_dl_position_1(timestamp_d, current_pos)
 
     def update_value(self):
         # update the value in the delay lines window
