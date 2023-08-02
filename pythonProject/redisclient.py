@@ -9,7 +9,6 @@ class RedisClient:
 
     def add_dl_position_1(self, time, pos):
         unix_time = self.unix_time_ms(time)
-        print(unix_time)
         self.ts.add('dl_pos_1', unix_time, pos)
     
     def add_temperature_1(self, time, temp):

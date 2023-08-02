@@ -74,8 +74,11 @@ class MainWindow(QMainWindow):
             self.redis_client.add_temperature_2(now, self.temp2)
             self.redis_client.add_temperature_3(now, self.temp3)
             self.redis_client.add_temperature_4(now, self.temp4)
+
+            self.ui.label_error.clear()
         except Exception as e:
             print(e)
+            self.ui.label_error.setText(str(e))
 
 
 
@@ -152,7 +155,7 @@ class DelayLinesWindow(QWidget):
 
         self.t = QTimer()
         self.t.timeout.connect(self.refresh_status)
-        self.t.start(500)
+        self.t.start(50)
 
     def closeEvent(self, *args):
         self.t.stop()
@@ -163,35 +166,40 @@ class DelayLinesWindow(QWidget):
         self.dl1_status()
 
     def dl1_status(self):
+        try:
+            self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
+            self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
 
-        self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
-        self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
+            current_pos, current_speed, timestamp = self.opcua_conn.read_nodes(["ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual", "ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual", "ns=4;s=MAIN.sTime"])
 
-        current_pos, current_speed, timestamp = self.opcua_conn.read_nodes(["ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual", "ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual", "ns=4;s=MAIN.sTime"])
+            self.ui.dl_dl1_substate.setText(str(timestamp))
 
-        self.ui.dl_dl1_substate.setText(str(timestamp))
+            # Convert mm -> micron
+            current_pos = current_pos * 1000
+            self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
 
-        # Convert mm -> micron
-        current_pos = current_pos * 1000
-        self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
+            target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")
+            target_pos = target_pos * 1000
+            self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
 
-        target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")
-        target_pos = target_pos * 1000
-        self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
+            current_speed = current_speed * 1000
+            self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
 
-        current_speed = current_speed * 1000
-        self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
+            timestamp_d = datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S.%f')
 
-        print(timestamp)
-        timestamp_d = datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S.%f')
+            # fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
+            #                 + timestamp_d.strftime(r'%Y-%m-%d') + '.csv'
 
-        # fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
-        #                 + timestamp_d.strftime(r'%Y-%m-%d') + '.csv'
+            # f = open(fileName, 'a')
+            # f.write(f'{str(timestamp)}, {current_pos:.1f} \n')
 
-        # f = open(fileName, 'a')
-        # f.write(f'{str(timestamp)}, {current_pos:.1f} \n')
+            self.redis_client.add_dl_position_1(timestamp_d, current_pos)
 
-        self.redis_client.add_dl_position_1(timestamp_d, current_pos)
+            self.ui.label_error.clear()
+        except Exception as e:
+            print(e)
+            self.ui.label_error.setText(str(e))
+            
 
     def update_value(self):
         # update the value in the delay lines window
