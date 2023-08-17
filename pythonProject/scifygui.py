@@ -292,7 +292,7 @@ class DelayLinesWindow(QWidget):
             pos = self.ui.dl1_textEdit_pos.toPlainText()
             #Convert to mm
             pos = float(pos) / 1000
-            speed = 0.1
+            speed = 0.03 #mm/s
 
             parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
             method = parent.get_child("4:RPC_MoveAbs")
@@ -309,7 +309,7 @@ class DelayLinesWindow(QWidget):
             # Convert to mm
             rel_pos = float(rel_pos) / 1000
             print("rel_pos = ",rel_pos)
-            speed = 0.05
+            speed = 0.03
 
             parent = self.opcua_conn.client.get_node('ns=4;s=MAIN.DL_Servo_1')
             method = parent.get_child("4:RPC_MoveRel")
