@@ -7,6 +7,7 @@ import asyncio
 from asyncua import ua
 import time
 from datetime import datetime
+from redisclient import RedisClient
 
 # async def call_method_async(opcua_client, node_id, method_name, args):
 #     method_node = opcua_client.get_node(node_id)
@@ -33,6 +34,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
         # save the OPC UA connection
         self.opcua_conn = opcua_conn
+        self.redis_client = RedisClient()
 
         # set up the main window
         self.ui = loadUi('main_window.ui', self)
@@ -62,13 +64,21 @@ class MainWindow(QMainWindow):
             self.update_cryo_temps()
 
             now = datetime.utcnow()
-            fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\Temperatures_' \
-                            + now.strftime(r'%Y-%m-%d') + '.csv'
+            # fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\Temperatures_' \
+            #                 + now.strftime(r'%Y-%m-%d') + '.csv'
 
-            f = open(fileName, 'a')
-            f.write(f'{str(now)}, {self.temp1}, {self.temp2}, {self.temp3}, {self.temp4} \n')
+            # f = open(fileName, 'a')
+            # f.write(f'{str(now)}, {self.temp1}, {self.temp2}, {self.temp3}, {self.temp4} \n')
+
+            self.redis_client.add_temperature_1(now, self.temp1)
+            self.redis_client.add_temperature_2(now, self.temp2)
+            self.redis_client.add_temperature_3(now, self.temp3)
+            self.redis_client.add_temperature_4(now, self.temp4)
+
+            self.ui.label_error.clear()
         except Exception as e:
             print(e)
+            self.ui.label_error.setText(str(e))
 
 
 
@@ -76,7 +86,7 @@ class MainWindow(QMainWindow):
 
         try:
 
-            self.delay_lines_window = DelayLinesWindow(self.opcua_conn)
+            self.delay_lines_window = DelayLinesWindow(self.opcua_conn, self.redis_client)
             self.delay_lines_window.show()
             print("Dl window is opening fine")
 
@@ -94,25 +104,34 @@ class MainWindow(QMainWindow):
         self.ui.label_dl_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
 
     def update_cryo_temps(self):
+        nodes = ["ns=4;s=GVL_Cryo_Temperatures.Temp_1", 
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_2",
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_3",
+            "ns=4;s=GVL_Cryo_Temperatures.Temp_4" ]
+
+        values = self.opcua_conn.read_nodes(nodes)
+
         # update the value in the delay lines window
-        self.temp1 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_1"))
+        self.temp1 = str(values[0])
         self.ui.main_label_temp1.setText(self.temp1)
 
-        self.temp2 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_2"))
+        self.temp2 = str(values[1])
         self.ui.main_label_temp2.setText(self.temp2)
 
-        self.temp3 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_3"))
+        self.temp3 = str(values[2])
         self.ui.main_label_temp3.setText(self.temp3)
 
-        self.temp4 = str(self.opcua_conn.read_node("ns=4;s=GVL_Cryo_Temperatures.Temp_4"))
+        self.temp4 = str(values[3])
         self.ui.main_label_temp4.setText(self.temp4)
 
 class DelayLinesWindow(QWidget):
-    def __init__(self, opcua_conn):
+    def __init__(self, opcua_conn, redis_client):
         super(DelayLinesWindow, self).__init__()
         # save the OPC UA connection
         self.opcua_conn = OPCUAConnection()
         self.opcua_conn.connect()
+
+        self.redis_client = redis_client
 
         # set up the delay lines window
         self.ui = loadUi('delay_lines.ui', self)
@@ -138,44 +157,66 @@ class DelayLinesWindow(QWidget):
         self.t.timeout.connect(self.refresh_status)
         self.t.start(500)  # ms
 
+        self.timestamp = None
+        self.t_pos = QTimer()
+        self.t_pos.timeout.connect(self.load_position)
+        self.t_pos.start(10)
+
+        self.timestamp = None
+        self.t_pos = QTimer()
+        self.t_pos.timeout.connect(self.load_position)
+        self.t_pos.start(10)
+
     def closeEvent(self, *args):
         self.t.stop()
+        self.t_pos.stop()
         self.opcua_conn.disconnect()
         super().closeEvent(*args)
 
     def refresh_status(self):
         self.dl1_status()
+    
+    def load_position(self):
+        if self.timestamp is not None:
+            previous_timestamp = self.timestamp
+        else:
+            previous_timestamp = None
+        
+        self.current_pos, self.current_speed, self.timestamp = self.opcua_conn.read_nodes(["ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual", "ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual", "ns=4;s=MAIN.sTime"])
+
+        if (previous_timestamp is not None) and previous_timestamp == self.timestamp:
+            print('Duplicate timestamp!')
+            print(self.timestamp)
+            return
+
+        # Convert mm -> micron
+        self.current_pos = self.current_pos * 1000
+        self.current_speed = self.current_speed * 1000
+
+        timestamp_d = datetime.strptime(self.timestamp, '%Y-%m-%d-%H:%M:%S.%f')
+        self.redis_client.add_dl_position_1(timestamp_d, self.current_pos)
+
 
     def dl1_status(self):
+        try:
+            self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
+            self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
 
-        timerElapsed = datetime.utcnow()
+            self.ui.dl_dl1_substate.setText(str(self.timestamp))
+            
+            self.ui.dl_dl1_current_position.setText(f'{self.current_pos:.1f}')
 
-        self.ui.dl_dl1_status.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sStatus")))
-        self.ui.dl_dl1_state.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sState")))
-        self.ui.dl_dl1_substate.setText(str(self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.sSubstate")))
+            target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")
+            target_pos = target_pos * 1000
+            self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
 
-        current_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrPosActual")
-        # Convert mm -> micron
-        current_pos = current_pos * 1000
-        self.ui.dl_dl1_current_position.setText(f'{current_pos:.1f}')
+            self.ui.dl_dl1_current_speed.setText(f'{self.current_speed:.1f}')
 
-        target_pos = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.ctrl.lrPosition")
-        target_pos = target_pos * 1000
-        self.ui.dl_dl1_target_position.setText(f'{target_pos:.1f}')
-
-        current_speed = self.opcua_conn.read_node("ns=4;s=MAIN.DL_Servo_1.stat.lrVelActual")
-        current_speed = current_speed * 1000
-        self.ui.dl_dl1_current_speed.setText(f'{current_speed:.1f}')
-
-        now = datetime.utcnow()
-
-        print('Time elapsed loading, DL position, DL speed : ', str(now - timerElapsed), current_pos, current_speed)
-        fileName = r'C:\Users\fys-lab-ivs\Documents\Python Scripts\Log\DLPositions_' \
-                        + now.strftime(r'%Y-%m-%d') + '.csv'
-
-        f = open(fileName, 'a')
-        f.write(f'{str(now)}, {current_pos:.1f}, {current_speed:.1f} \n')
-
+            self.ui.label_error.clear()
+        except Exception as e:
+            print(e)
+            self.ui.label_error.setText(str(e))
+            
 
     def update_value(self):
         # update the value in the delay lines window
